@@ -4,32 +4,34 @@ import { LuPackageCheck, LuPackage } from 'react-icons/lu'
 interface Props {
   valuePedidos: string
 }
-export function SummaryHome({valuePedidos}: Props) {
+export function SummaryHome({ valuePedidos }: Props) {
   return (
     <div className="max-w-[1500px] my-4 grid grid-cols-1 md:grid-cols-3 gap-8">
 
-      <div className=" bg-white px-4 py-4 flex flex-col shadow-md rounded-2xl">
-        <div className='flex items-center justify-between'>
-          <span className='text-4xl'>Pedidos</span>
-          <LuPackage className='text-amber-700 text-5xl' />
+      <div className=" bg-white px-14 flex justify-between items-center py-8 flex-row shadow-md rounded-2xl">
+        <div className='flex flex-col'>
+          <span className='text-4xl font-semibold'>Pedidos</span>
+          <span className='text-4xl text-amber-700'>{valuePedidos}k</span>
         </div>
-        <span className='text-4xl'>{valuePedidos}k</span>
+        <LuPackage className='text-amber-700 text-7xl' />
+
       </div>
 
-      <div className="bg-white px-4 py-4 flex flex-col shadow-md rounded-2xl">
-        <div className='flex items-center justify-between'>
-          <span className='text-4xl'>Realizados</span>
-          <LuPackageCheck className='text-green-700 text-5xl' />
+      <div className=" bg-white px-14 flex justify-between items-center py-8 flex-row shadow-md rounded-2xl">
+        <div className='flex flex-col'>
+          <span className='text-4xl font-semibold'>Realizados</span>
+          <span className='text-4xl text-green-700'>9.000</span>
         </div>
-        <span className='text-4xl'>9k</span>
+        <LuPackageCheck className='text-green-700 text-7xl' />
       </div>
 
-      <div className="bg-white px-4 py-4 flex flex-col shadow-md rounded-2xl">
-        <div className='flex items-center justify-between'>
-          <span className='text-4xl'>Média</span>
-          <FaRegClock className='text-lime-500 text-5xl' />
+      <div className=" bg-white px-14 flex justify-between items-center py-8 flex-row shadow-md rounded-2xl">
+        <div className='flex flex-col'>
+          <span className='text-4xl font-semibold'>Média</span>
+          <span className='text-4xl text-lime-500'>1m03s</span>
         </div>
-        <span className='text-4xl'>1m03s</span>
+        <FaRegClock className='text-lime-500 text-6xl' />
+
       </div>
 
     </div>

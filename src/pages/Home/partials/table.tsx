@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext } from "react";
 import { EmployeesContext } from '../../../context/EmployeeContext'
 export function TableHome() {
   const {
@@ -6,32 +6,25 @@ export function TableHome() {
     getSummaryForEmployee
   } = useContext(EmployeesContext)
 
-
   const funcionarios = getEmployees()
-
-  const [taxaAproveitamento, setTaxaAproveitamento] = useState(0);
-  const [corTexto, setCorTexto] = useState('');
-  const [feedbackMessage, setFeedbackMessage] = useState('');
-
-
 
   return (
     <table className="min-w-full divide-y divide-gray-200">
-      <thead className="bg-gray-900">
+      <thead className="bg-gray-200">
         <tr>
-          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-100 uppercase tracking-wider">
+          <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
             Nome
           </th>
-          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-100 uppercase tracking-wider">
+          <th scope="col" className="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
             Pedidos
           </th>
-          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-100 uppercase tracking-wider">
+          <th scope="col" className="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
             Realizados
           </th>
-          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-100 uppercase tracking-wider">
+          <th scope="col" className="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
             Taxa de aproveitamento
           </th>
-          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-100 uppercase tracking-wider">
+          <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
             Situação
           </th>
         </tr>
@@ -67,16 +60,16 @@ export function TableHome() {
                   </div>
                 </div>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap">
+              <td className="px-6 py-4 whitespace-nowrap text-center">
                 {summary.pedidosTotal}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap">
+              <td className="px-6 py-4 whitespace-nowrap text-center">
                 <p className={`text-lg font-bold text-${corTexto}`}>{summary.realizadosTotal}</p>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap">
+              <td className="px-6 py-4 whitespace-nowrap text-center">
                 <p className={`text-lg font-bold text-${corTexto}`}>{summary.taxaAproveitamento.toFixed(2)}%</p>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap">
+              <td className="px-6 py-4 whitespace-nowrap flex justify-end">
                 <span className={`rounded-lg px-4 py-2 bg-${corTexto}`}>
                   {feedbackMessage}
                 </span>

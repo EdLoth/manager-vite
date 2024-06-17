@@ -9,7 +9,7 @@ export function Report() {
       <div className="flex space-x-4">
         <button
           className={`px-4 py-2 rounded-full ${
-            activeTab === 'diaria' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'
+            activeTab === 'diaria' ? 'bg-[#d40f7d] text-white' : 'bg-gray-200 text-gray-700'
           }`}
           onClick={() => setActiveTab('diaria')}
         >
@@ -17,7 +17,7 @@ export function Report() {
         </button>
         <button
           className={`px-4 py-2 rounded-full ${
-            activeTab === 'semanal' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'
+            activeTab === 'semanal' ? 'bg-[#d40f7d] text-white' : 'bg-gray-200 text-gray-700'
           }`}
           onClick={() => setActiveTab('semanal')}
         >
@@ -25,7 +25,7 @@ export function Report() {
         </button>
         <button
           className={`px-4 py-2 rounded-full ${
-            activeTab === 'mensal' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'
+            activeTab === 'mensal' ? 'bg-[#d40f7d] text-white' : 'bg-gray-200 text-gray-700'
           }`}
           onClick={() => setActiveTab('mensal')}
         >
