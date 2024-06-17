@@ -1,3 +1,5 @@
+import { useState, useEffect } from 'react';
+
 interface Props {
   title: string;
   pedidos: string;
@@ -6,15 +8,28 @@ interface Props {
 }
 
 export function ReportContent({ title, pedidos, realizados, type }: Props) {
-  // Convertendo pedidos e realizados para números antes de calcular a taxa de aproveitamento
-  const pedidosNumero = parseFloat(pedidos);
-  const realizadosNumero = parseFloat(realizados);
+  const [corBarraProgresso, setCorBarraProgresso] = useState<string>('bg-green-500');
+  const [taxaAproveitamento, setTaxaAproveitamento] = useState<number>(0);
 
-  const calcularTaxaAproveitamento = () => {
-    return (realizadosNumero / pedidosNumero) * 100;
-  };
+  useEffect(() => {
+    const pedidosNumero = parseFloat(pedidos);
+    const realizadosNumero = parseFloat(realizados);
+    
+    if (pedidosNumero > 0) {
+      const taxa = (realizadosNumero / pedidosNumero) * 100;
+      setTaxaAproveitamento(taxa);
 
-  const taxaAproveitamento = calcularTaxaAproveitamento();
+      if (taxa <= 25) {
+        setCorBarraProgresso('bg-red-500');
+      } else if (taxa <= 50) {
+        setCorBarraProgresso('bg-orange-500');
+      } else if (taxa <= 75) {
+        setCorBarraProgresso('bg-yellow-500');
+      } else {
+        setCorBarraProgresso('bg-green-500');
+      }
+    }
+  }, [pedidos, realizados]);
 
   return (
     <div>
@@ -22,15 +37,14 @@ export function ReportContent({ title, pedidos, realizados, type }: Props) {
       <span>Média baseada nos pedidos realizados</span>
       <div className="w-full bg-gray-200 rounded-full mt-2">
         <div
-          className={`h-2 rounded-full bg-green-500`}
+          className={`h-2 rounded-full ${corBarraProgresso}`}
           style={{ width: `${taxaAproveitamento}%` }}
         ></div>
       </div>
       <div className="flex justify-between mt-2">
-        <span>Pedidos: {pedidos}</span>
         <span>Realizados: {realizados}</span>
+        <span>Pedidos: {pedidos}</span>
       </div>
     </div>
-
   );
 }

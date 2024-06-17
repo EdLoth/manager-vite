@@ -1,0 +1,42 @@
+{
+  "admin": [
+      {
+      "hash": "D41D8CD9",
+      "password": "12345678"
+    }
+  ],
+  "employees": [
+    {
+      "id": 1,
+      "name": "João Silva",
+      "role": "Desenvolvedor",
+      "birthday": "1990-05-15",
+      "work": [
+        {
+          "id": 1,
+          "date": "2024-06-16",
+          "pedidos": 500,
+          "realizados": 0,
+          "isPresente": 1
+        },
+        {
+          "id": 2,
+          "date": "2024-06-17",
+          "pedidos": 400,
+          "realizados": 960,
+          "isPresente": 1
+        },
+        {
+          "id": 3,
+          "date": "2024-06-16",
+          "pedidos": 500,
+          "realizados": 100,
+          "isPresente": 1
+        }
+      ]
+    }
+  ],
+  "roles": [
+    
+  ]
+}

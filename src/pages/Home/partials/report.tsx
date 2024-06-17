@@ -34,9 +34,9 @@ export function Report() {
       </div>
       {/* Renderiza o conteúdo da tab ativa */}
       <div className="mt-4">
-        {activeTab === 'diaria' && <ReportContent title="Diária" pedidos="100" realizados="80" type="day" />}
-        {activeTab === 'semanal' && <ReportContent title="Semanal" pedidos="500" realizados="400" type="week" />}
-        {activeTab === 'mensal' && <ReportContent title="Mensal" pedidos="2000" realizados="1800" type="month" />}
+        {activeTab === 'diaria' && <ReportContent title="Diária" pedidos="100" realizados="60" type="day" />}
+        {activeTab === 'semanal' && <ReportContent title="Semanal" pedidos="500" realizados="230" type="week" />}
+        {activeTab === 'mensal' && <ReportContent title="Mensal" pedidos="2000" realizados="1900" type="month" />}
       </div>
     </div>
   );
