@@ -1,12 +1,10 @@
-import { useContext } from "react";
-import { EmployeesContext } from '../../../context/EmployeeContext'
+import { useContextEmployees } from '../../../context/EmployeeContext'
 export function TableHome() {
   const {
-    getEmployees,
+    employees,
     getSummaryForEmployee
-  } = useContext(EmployeesContext)
+  } = useContextEmployees()
 
-  const funcionarios = getEmployees()
 
   return (
     <table className="min-w-full divide-y divide-gray-200">
@@ -31,7 +29,7 @@ export function TableHome() {
       </thead>
 
       <tbody className="bg-white divide-y divide-gray-200">
-        {funcionarios.map((employee) => {
+        {employees.map((employee) => {
           const summary = getSummaryForEmployee('month', employee.id);
 
           let corTexto = 'green-500'; // Cor padrão para 'Excelente'

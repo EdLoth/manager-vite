@@ -1,42 +1,43 @@
 {
   "admin": [
-      {
+    {
       "hash": "D41D8CD9",
-      "password": "12345678"
+      "password": "12345678",
+      "id": "7125"
     }
   ],
   "employees": [
     {
-      "id": 1,
-      "name": "João Silva",
-      "role": "Desenvolvedor",
-      "birthday": "1990-05-15",
-      "work": [
-        {
-          "id": 1,
-          "date": "2024-06-16",
-          "pedidos": 500,
-          "realizados": 0,
-          "isPresente": 1
-        },
-        {
-          "id": 2,
-          "date": "2024-06-17",
-          "pedidos": 400,
-          "realizados": 960,
-          "isPresente": 1
-        },
-        {
-          "id": 3,
-          "date": "2024-06-16",
-          "pedidos": 500,
-          "realizados": 100,
-          "isPresente": 1
-        }
-      ]
+      "id": "bb79",
+      "name": "Lara Santos",
+      "role": "Auxiliar de estoquista - Pack",
+      "birthday": "2024-06-06"
+    },
+    {
+      "id": "be22",
+      "name": "Cauã Matheus",
+      "role": "Auxiliar de estoquista - Faturamento",
+      "birthday": "2024-06-01"
+    },
+    {
+      "id": "2c31",
+      "name": "teste",
+      "role": "Auxiliar de estoquista - Pack",
+      "birthday": "2024-06-12"
     }
   ],
   "roles": [
-    
+    {
+      "id": "1",
+      "name": "Auxiliar de estoquista - Pick"
+    },
+    {
+      "id": "2",
+      "name": "Auxiliar de estoquista - Pack"
+    },
+    {
+      "id": "3",
+      "name": "Auxiliar de estoquista - Faturamento"
+    }
   ]
 }

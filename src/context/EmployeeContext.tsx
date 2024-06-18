@@ -1,11 +1,11 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
-import { getISOWeek, getMonth } from 'date-fns';
-import axios from 'axios';
+import { api } from '../lib/axios';
+import { startOfMonth, endOfMonth, format } from 'date-fns';
 
 interface Employee {
   id: number;
   name: string;
-  role: string; // Alterar para tipo number para referenciar ID da role
+  role: string; 
   birthday: string;
   work: {
     id: number;
@@ -16,138 +16,112 @@ interface Employee {
   }[];
 }
 
+interface EmployeeInput {
+  id: number;
+  name: string;
+  role: string;
+  birthday: string;
+  work: [];
+}
+
 interface Role {
   id: number;
-  nome: string;
+  name: string;
+}
+
+interface Work {
+  id: number;
+  date: string;
+  pedidos: number;
+  realizados: number;
+  isPresente: 0 | 1 | 2;
 }
 
 interface EmployeesContextType {
-  // Métodos para funcionários
-  getEmployees: () => Employee[];
-  getEmployeeByID: (id: number) => Employee | undefined;
-  getWorksByEmployeeID: (employeeId: number) => { id: number; date: string; pedidos: number; realizados: number; isPresente: 0 | 1 | 2 }[];
-  getWorkByID: (employeeId: number, workId: number) => { id: number; date: string; pedidos: number; realizados: number; isPresente: 0 | 1 | 2 } | undefined;
-  getSummary: (type: 'day' | 'week' | 'month', date?: string) => { pedidosTotal: number; realizadosTotal: number; taxaAproveitamento: number };
+  employees: Employee[];
+  roles: Role[];
+  getEmployees: () => Promise<void>;
+  addEmployee: (employee: EmployeeInput) => Promise<void>;
+  updateEmployee: (id: number, employee: EmployeeInput) => Promise<void>;
+  deleteEmployee: (id: number) => Promise<void>;
+  getRoles: () => Promise<void>;
+  addRole: (role: Role) => Promise<void>;
+  deleteRole: (roleId: number) => Promise<void>;
   getSummaryForEmployee: (type: 'day' | 'week' | 'month', employeeId: number) => { pedidosTotal: number; realizadosTotal: number; taxaAproveitamento: number };
-  addEmployee: (employee: Employee) => void;
-  addWorkDay: (employeeId: number, workDay: { id: number; date: string; pedidos: number; realizados: number; isPresente: 0 | 1 | 2 }) => void;
-
-  // Métodos para roles
-  getRoles: () => Role[];
-  addRole: (role: Role) => void;
-  deleteRole: (roleId: number) => void;
-
-  // Novo método para obter todos os funcionários com resumo
-  getEmployeesWithSummary: (type?: 'day' | 'week' | 'month') => Employee[];
+  addWorkDay: (employeeId: string, workDay: Work) => Promise<void>;
+  updateWorkDay: (employeeId: number, workDay: Work) => Promise<void>;
+  getWorksByEmployeeID: (employeeId: number, startDate?: string, endDate?: string) => Work[];
+  deleteWork: (employeeId: number, workId: number) => Promise<void>;
 }
 
 export const EmployeesContext = createContext({} as EmployeesContextType);
 
 export const EmployeesProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [employees, setEmployees] = useState<Employee[]>([]);
-  const [nextEmployeeId, setNextEmployeeId] = useState<number>(1);
   const [roles, setRoles] = useState<Role[]>([]);
-  const [nextRoleId, setNextRoleId] = useState<number>(1);
-  const [nextWorkId, setNextWorkId] = useState<number>(1); // Estado para controlar o próximo ID de trabalho
 
-  // Carregar dados iniciais dos funcionários do JSON Server
-  useEffect(() => {
-    axios.get('http://localhost:5000/employees')
-      .then(response => {
-        const employeesData = response.data as Employee[]; // Cast para Employee[]
-        setEmployees(employeesData);
-        const maxId = employeesData.reduce((max: number, employee: Employee) => (employee.id > max ? employee.id : max), 0);
-        setNextEmployeeId(maxId + 1);
-      })
-      .catch(error => {
-        console.error('Erro ao carregar funcionários do JSON Server:', error);
-      });
-  }, []); // Array vazio significa que useEffect será executado apenas uma vez, após a montagem inicial
-
-  // Função para calcular a semana ISO de uma data
-  function getISOWeekNumber(date: Date): number {
-    return getISOWeek(date);
+  async function getEmployees() {
+    const response = await api.get<Employee[]>('employees');
+    setEmployees(response.data);
   }
 
-  // Função para calcular o resumo baseado no tipo (day, week, month)
-  const getSummary = (type: 'day' | 'week' | 'month', date?: string) => {
-    let filteredWorks: { pedidos: number; realizados: number }[] = [];
+  async function addEmployee(employee: EmployeeInput) {
+    const newEmployee = { ...employee, work: [] }; 
+    await api.post('employees', newEmployee);
+    await getEmployees();
+  }
 
-    switch (type) {
-      case 'day':
-        filteredWorks = employees.flatMap(employee =>
-          employee.work.filter(work => work.date === date)
-        );
-        break;
-      case 'week':
-        filteredWorks = employees.flatMap(employee =>
-          employee.work.filter(work => {
-            const workDate = new Date(work.date);
-            const workWeek = getISOWeek(workDate);
-            const targetDate = new Date(date || '');
-            const targetWeek = getISOWeek(targetDate);
-            return workWeek === targetWeek;
-          })
-        );
-        break;
-      case 'month':
-        filteredWorks = employees.flatMap(employee =>
-          employee.work.filter(work => {
-            const workDate = new Date(work.date);
-            const workMonth = getMonth(workDate);
-            const targetDate = new Date(date || '');
-            const targetMonth = getMonth(targetDate);
-            return workMonth === targetMonth;
-          })
-        );
-        break;
-      default:
-        break;
-    }
+  async function updateEmployee(id: number, employee: EmployeeInput) {
+    await api.put(`employees/${id}`, employee);
+    await getEmployees();
+  }
 
-    const pedidosTotal = filteredWorks.reduce((total, work) => total + work.pedidos, 0);
-    const realizadosTotal = filteredWorks.reduce((total, work) => total + work.realizados, 0);
-    const taxaAproveitamento = pedidosTotal === 0 ? 0 : (realizadosTotal / pedidosTotal) * 100;
+  async function deleteEmployee(id: number) {
+    await api.delete(`employees/${id}`);
+    await getEmployees();
+  }
 
-    return { pedidosTotal, realizadosTotal, taxaAproveitamento };
-  };
+  async function getRoles() {
+    const response = await api.get<Role[]>('roles');
+    setRoles(response.data);
+  }
 
-  const getSummaryForEmployee = (type: 'day' | 'week' | 'month', employeeId: number): { pedidosTotal: number; realizadosTotal: number; taxaAproveitamento: number } => {
+  async function addRole(role: Role) {
+    await api.post('roles', role);
+    await getRoles();
+  }
+
+  async function deleteRole(roleId: number) {
+    await api.delete(`roles/${roleId}`);
+    await getRoles();
+  }
+
+  const getSummaryForEmployee = (type: 'day' | 'week' | 'month', employeeId: number) => {
     const employee = employees.find(emp => emp.id === employeeId);
-  
-    if (!employee) {
+    if (!employee || !employee.work) {
       return { pedidosTotal: 0, realizadosTotal: 0, taxaAproveitamento: 0 };
     }
-  
+
     let filteredWorks: { pedidos: number; realizados: number }[] = [];
     const today = new Date();
     let targetDate: Date;
-  
     switch (type) {
       case 'day':
-        // Filtrar trabalhos do dia anterior
         targetDate = new Date(today);
         targetDate.setDate(today.getDate() - 1);
-        const targetDateString = targetDate.toISOString().split('T')[0]; // Formato yyyy-mm-dd
-  
+        const targetDateString = targetDate.toISOString().split('T')[0];
         filteredWorks = employee.work.filter(work => work.date === targetDateString);
         break;
       case 'week':
-        // Filtrar trabalhos da última semana
         const lastWeekStart = new Date(today);
         lastWeekStart.setDate(today.getDate() - 7);
-        const lastWeekStartDateString = lastWeekStart.toISOString().split('T')[0]; // Início da última semana
-  
         filteredWorks = employee.work.filter(work => {
           const workDate = new Date(work.date);
           return workDate >= lastWeekStart && workDate <= today;
         });
         break;
       case 'month':
-        // Filtrar trabalhos do mês atual
         const thisMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-        const thisMonthStartDateString = thisMonthStart.toISOString().split('T')[0]; // Início do mês atual
-  
         filteredWorks = employee.work.filter(work => {
           const workDate = new Date(work.date);
           return workDate >= thisMonthStart && workDate <= today;
@@ -156,101 +130,80 @@ export const EmployeesProvider: React.FC<{ children: ReactNode }> = ({ children 
       default:
         break;
     }
-  
     const pedidosTotal = filteredWorks.reduce((total, work) => total + work.pedidos, 0);
     const realizadosTotal = filteredWorks.reduce((total, work) => total + work.realizados, 0);
     const taxaAproveitamento = pedidosTotal === 0 ? 0 : (realizadosTotal / pedidosTotal) * 100;
-  
     return { pedidosTotal, realizadosTotal, taxaAproveitamento };
   };
 
-  const addEmployee = (employee: Employee) => {
-    const newEmployee = { ...employee, id: nextEmployeeId };
-    setEmployees([...employees, newEmployee]);
-    setNextEmployeeId(nextEmployeeId + 1);
+  const addWorkDay = async (employeeId: string, workDay: Work) => {
+    const employee = employees.find(emp => emp.id === parseInt(employeeId));
+    if (!employee) return;
+    employee.work.push(workDay);
+    await api.put(`employees/${employeeId}`, employee);
+    await getEmployees();
   };
 
-  const addWorkDay = (employeeId: number, workDay: { id: number; date: string; pedidos: number; realizados: number; isPresente: 0 | 1 | 2 }) => {
-    const updatedEmployees = employees.map(employee => {
-      if (employee.id === employeeId) {
-        const updatedWork = [...employee.work, { ...workDay, id: nextWorkId }];
-        return { ...employee, work: updatedWork };
-      }
-      return employee;
-    });
-
-    setEmployees(updatedEmployees);
-    setNextWorkId(prevNextWorkId => prevNextWorkId + 1); // Incrementa o próximo ID de trabalho
+  const updateWorkDay = async (employeeId: number, workDay: Work) => {
+    const employee = employees.find(emp => emp.id === employeeId);
+    if (!employee) return;
+    const workIndex = employee.work.findIndex(work => work.id === workDay.id);
+    if (workIndex === -1) return;
+    employee.work[workIndex] = workDay;
+    await api.put(`employees/${employeeId}`, employee);
+    await getEmployees();
   };
 
-  const getEmployees = () => employees;
-
-  const getEmployeeByID = (id: number) => employees.find(employee => employee.id === id);
-
-  const getWorksByEmployeeID = (employeeId: number) => {
-    const employee = employees.find(employee => employee.id === employeeId);
-    return employee ? employee.work : [];
-  };
-
-  const getWorkByID = (employeeId: number, workId: number) => {
-    const employee = employees.find(employee => employee.id === employeeId);
-    if (employee) {
-      return employee.work.find(work => work.id === workId);
+  const getWorksByEmployeeID = (employeeId: number, startDate?: string, endDate?: string) => {
+    const employee = employees.find(emp => emp.id === employeeId);
+    if (!employee || !employee.work) {
+      return [];
     }
-    return undefined;
+
+    if (!startDate || !endDate) {
+      const today = new Date();
+      startDate = format(startOfMonth(today), 'yyyy-MM-dd');
+      endDate = format(endOfMonth(today), 'yyyy-MM-dd');
+    }
+
+    return employee.work.filter(work => work.date >= startDate && work.date <= endDate);
   };
 
-  const getRoles = () => roles;
-
-  const addRole = (role: Role) => {
-    const newRole = { ...role, id: nextRoleId };
-    setRoles([...roles, newRole]);
-    setNextRoleId(nextRoleId + 1);
+  const deleteWork = async (employeeId: number, workId: number) => {
+    const employee = employees.find(emp => emp.id === employeeId);
+    if (!employee) return;
+    employee.work = employee.work.filter(work => work.id !== workId);
+    await api.put(`employees/${employeeId}`, employee);
+    await getEmployees();
   };
 
-  const deleteRole = (roleId: number) => {
-    const updatedRoles = roles.filter(role => role.id !== roleId);
-    setRoles(updatedRoles);
-
-    // Atualizar os funcionários para remover a role deletada
-    const updatedEmployees = employees.map(employee => {
-      if (employee.role === roleId.toString()) {
-        return { ...employee, role: '' }; // Limpar a role do funcionário
-      }
-      return employee;
-    });
-    setEmployees(updatedEmployees);
-  };
-
-  // Nova função para obter todos os funcionários com resumo
-  const getEmployeesWithSummary = (type: 'day' | 'week' | 'month' = 'month') => {
-    return employees.map(employee => {
-      const summary = getSummaryForEmployee(type, employee.id );
-      return {
-        ...employee,
-        pedidosTotal: summary.pedidosTotal,
-        realizadosTotal: summary.realizadosTotal,
-        taxaAproveitamento: summary.taxaAproveitamento
-      };
-    });
-  };
+  useEffect(() => {
+    getEmployees();
+    getRoles();
+  }, []);
 
   return (
-    <EmployeesContext.Provider value={{
-      getEmployees,
-      getEmployeeByID,
-      getWorksByEmployeeID,
-      getWorkByID,
-      getSummary,
-      getSummaryForEmployee,
-      addEmployee,
-      addWorkDay,
-      getEmployeesWithSummary,
-      getRoles,
-      addRole,
-      deleteRole
-    }}>
+    <EmployeesContext.Provider
+      value={{
+        employees,
+        roles,
+        getEmployees,
+        addEmployee,
+        updateEmployee,
+        deleteEmployee,
+        getRoles,
+        addRole,
+        deleteRole,
+        getSummaryForEmployee,
+        addWorkDay,
+        updateWorkDay,
+        getWorksByEmployeeID,
+        deleteWork,
+      }}
+    >
       {children}
     </EmployeesContext.Provider>
   );
 };
+
+export const useContextEmployees = () => useContext(EmployeesContext);
