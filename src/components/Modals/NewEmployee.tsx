@@ -42,16 +42,7 @@ export function NewEmployeeModal() {
             />
           </div>
 
-          <input
-            type="time"
-            {...register("initialHour")} // Se estiver usando react-hook-form
-            className="rounded-lg border-0 bg-gray-900 text-gray-300 p-4 placeholder-gray-500"
-          />
-          <input
-            type="time"
-            {...register("en")} // Se estiver usando react-hook-form
-            className="rounded-lg border-0 bg-gray-900 text-gray-300 p-4 placeholder-gray-500"
-          />
+
           <div className='flex flex-col gap-3'>
             <label className='text-white text-[1.2rem] font-semibold' htmlFor="role">Area de atuação</label>
             <Controller

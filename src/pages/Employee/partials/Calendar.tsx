@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Calendar, SlotInfo, dateFnsLocalizer } from 'react-big-calendar';
-import { format, parse, startOfWeek, getDay, startOfMonth, endOfMonth } from 'date-fns';
+import { format, startOfMonth, endOfMonth, startOfWeek, getDay } from 'date-fns'; // Importe startOfWeek aqui
 import { ptBR } from 'date-fns/locale';
 import { useParams } from 'react-router-dom';
 import * as Dialog from '@radix-ui/react-dialog'
@@ -15,9 +15,8 @@ const locales = {
 
 const localizer = dateFnsLocalizer({
   format,
-  parse,
-  startOfWeek,
-  getDay,
+  startOfWeek, // Adicione startOfWeek aqui
+  getDay, // Adicione getDay aqui
   locales,
 });
 
@@ -25,14 +24,22 @@ interface Params {
   id: string;
   [key: string]: string | undefined;
 }
+
 export function CalendarEmployee() {
-  
   const { id } = useParams<Params>();
   const { getWorksByEmployeeID } = useContextEmployees();
 
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>();
+
+  const handleOpenDialog = (slotInfo: SlotInfo) => {
+    setIsOpen(true);
+    setSelectedDate(slotInfo.start as Date);
+  };
+
   const today = new Date();
-  const startDate = format(startOfMonth(today), 'yyyy-MM-dd');
-  const endDate = format(endOfMonth(today), 'yyyy-MM-dd');
+  const startDate = startOfMonth(today);
+  const endDate = endOfMonth(today);
 
   const works = getWorksByEmployeeID(Number(id), startDate, endDate);
 
@@ -42,14 +49,6 @@ export function CalendarEmployee() {
     end: new Date(work.date),
     allDay: true,
   }));
-
-  const [isOpen, setIsOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-
-  const handleOpenDialog = (slotInfo: SlotInfo) => {
-    setIsOpen(true);
-    setSelectedDate(slotInfo.start as Date);
-  };
 
   return (
     <div className="p-4">

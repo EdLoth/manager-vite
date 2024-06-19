@@ -6,6 +6,12 @@ export function Report() {
 
   return (
     <div className="bg-white px-4 py-2">
+
+
+
+      <section></section>
+      <div></div>
+
       <div className="flex space-x-4">
         <button
           className={`px-4 py-2 rounded-full ${

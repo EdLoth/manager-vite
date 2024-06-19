@@ -10,6 +10,30 @@
 }
 
 .rbc-header {
+  background-color: #69e3e7 !important;
+  padding: 0.5rem;
+  font-weight: 500 !important;
+}
+
+.rbc-btn-group :nth-child(3) {
+  display: none;
+}
+
+.rbc-btn-group :last-child {
+  display: none;
+}
+
+.rbc-day-bg {
+  cursor: pointer;
+  background-color: #fff;
+}
+
+.rbc-day-bg: hover {
+  cursor: pointer;
+  background-color: #000 !important;
+}
+
+.rbc-header {
   background-color: #f3f4f6;
   padding: 0.5rem;
   font-weight: 500;
@@ -28,4 +52,8 @@
 
 .rbc-event:hover {
   background-color: #2563eb;
+}
+
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(90%) sepia(10%) saturate(300%) hue-rotate(180deg) brightness(1000%);
 }

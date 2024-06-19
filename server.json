@@ -8,22 +8,18 @@
   ],
   "employees": [
     {
-      "id": "bb79",
-      "name": "Lara Santos",
+      "id": "3562",
+      "name": "Joao santos",
       "role": "Auxiliar de estoquista - Pack",
-      "birthday": "2024-06-06"
+      "birthday": "2001-05-12",
+      "work": []
     },
     {
-      "id": "be22",
-      "name": "Cauã Matheus",
-      "role": "Auxiliar de estoquista - Faturamento",
-      "birthday": "2024-06-01"
-    },
-    {
-      "id": "2c31",
-      "name": "teste",
+      "id": "4383",
+      "name": "Eduardo Ramos",
       "role": "Auxiliar de estoquista - Pack",
-      "birthday": "2024-06-12"
+      "birthday": "1999-06-30",
+      "work": []
     }
   ],
   "roles": [

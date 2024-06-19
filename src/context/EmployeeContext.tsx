@@ -1,19 +1,13 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { api } from '../lib/axios';
-import { startOfMonth, endOfMonth, format } from 'date-fns';
+import { startOfMonth, endOfMonth } from 'date-fns';
 
 interface Employee {
   id: number;
   name: string;
-  role: string; 
+  role: string;
   birthday: string;
-  work: {
-    id: number;
-    date: string;
-    pedidos: number;
-    realizados: number;
-    isPresente: 0 | 1 | 2;
-  }[];
+  work: Work[];
 }
 
 interface EmployeeInput {
@@ -21,7 +15,7 @@ interface EmployeeInput {
   name: string;
   role: string;
   birthday: string;
-  work: [];
+  work: Work[];
 }
 
 interface Role {
@@ -30,12 +24,15 @@ interface Role {
 }
 
 interface Work {
-  id: number;
+  id: string;
   date: string;
-  pedidos: number;
-  realizados: number;
-  isPresente: 0 | 1 | 2;
+  initialHour: string;
+  endHour: string;
+  pedidos: string;
+  realizados: string;
+  isPresente: string;
 }
+
 
 interface EmployeesContextType {
   employees: Employee[];
@@ -50,8 +47,8 @@ interface EmployeesContextType {
   getSummaryForEmployee: (type: 'day' | 'week' | 'month', employeeId: number) => { pedidosTotal: number; realizadosTotal: number; taxaAproveitamento: number };
   addWorkDay: (employeeId: string, workDay: Work) => Promise<void>;
   updateWorkDay: (employeeId: number, workDay: Work) => Promise<void>;
-  getWorksByEmployeeID: (employeeId: number, startDate?: string, endDate?: string) => Work[];
-  deleteWork: (employeeId: number, workId: number) => Promise<void>;
+  getWorksByEmployeeID: (employeeId: number, startDate?: Date, endDate?: Date) => Work[];
+  deleteWork: (employeeId: number, workId: string) => Promise<void>;
 }
 
 export const EmployeesContext = createContext({} as EmployeesContextType);
@@ -66,7 +63,7 @@ export const EmployeesProvider: React.FC<{ children: ReactNode }> = ({ children 
   }
 
   async function addEmployee(employee: EmployeeInput) {
-    const newEmployee = { ...employee, work: [] }; 
+    const newEmployee = { ...employee, work: [] };
     await api.post('employees', newEmployee);
     await getEmployees();
   }
@@ -102,7 +99,7 @@ export const EmployeesProvider: React.FC<{ children: ReactNode }> = ({ children 
       return { pedidosTotal: 0, realizadosTotal: 0, taxaAproveitamento: 0 };
     }
 
-    let filteredWorks: { pedidos: number; realizados: number }[] = [];
+    let filteredWorks: Work[] = [];
     const today = new Date();
     let targetDate: Date;
     switch (type) {
@@ -110,7 +107,7 @@ export const EmployeesProvider: React.FC<{ children: ReactNode }> = ({ children 
         targetDate = new Date(today);
         targetDate.setDate(today.getDate() - 1);
         const targetDateString = targetDate.toISOString().split('T')[0];
-        filteredWorks = employee.work.filter(work => work.date === targetDateString);
+        filteredWorks = employee.work.filter(work => new Date(work.date).toISOString().split('T')[0] === targetDateString);
         break;
       case 'week':
         const lastWeekStart = new Date(today);
@@ -130,23 +127,36 @@ export const EmployeesProvider: React.FC<{ children: ReactNode }> = ({ children 
       default:
         break;
     }
-    const pedidosTotal = filteredWorks.reduce((total, work) => total + work.pedidos, 0);
-    const realizadosTotal = filteredWorks.reduce((total, work) => total + work.realizados, 0);
+
+    const pedidosTotal = filteredWorks.reduce((total, work) => total + parseInt(work.pedidos), 0);
+    const realizadosTotal = filteredWorks.reduce((total, work) => total + parseInt(work.realizados), 0);
     const taxaAproveitamento = pedidosTotal === 0 ? 0 : (realizadosTotal / pedidosTotal) * 100;
     return { pedidosTotal, realizadosTotal, taxaAproveitamento };
   };
 
+
+
   const addWorkDay = async (employeeId: string, workDay: Work) => {
-    const employee = employees.find(emp => emp.id === parseInt(employeeId));
-    if (!employee) return;
-    employee.work.push(workDay);
-    await api.put(`employees/${employeeId}`, employee);
+    console.log(employeeId)
+    // Encontrar o funcionário pelo ID
+    const employeeIndex = employees.findIndex(emp => emp.id === parseInt(employeeId));
+    if (employeeIndex === -1) return;
+  
+    // Adicionar o novo dia de trabalho ao array work do funcionário
+    employees[employeeIndex].work.push(workDay);
+  
+    // Atualizar o funcionário no servidor
+    await api.put(`employees/${employeeId}`, employees[employeeIndex]);
+  
+    // Atualizar a lista de funcionários localmente
     await getEmployees();
   };
+  
 
   const updateWorkDay = async (employeeId: number, workDay: Work) => {
     const employee = employees.find(emp => emp.id === employeeId);
-    if (!employee) return;
+    
+    if (!employee) return console.log("Funcionario não encontrado");
     const workIndex = employee.work.findIndex(work => work.id === workDay.id);
     if (workIndex === -1) return;
     employee.work[workIndex] = workDay;
@@ -154,7 +164,7 @@ export const EmployeesProvider: React.FC<{ children: ReactNode }> = ({ children 
     await getEmployees();
   };
 
-  const getWorksByEmployeeID = (employeeId: number, startDate?: string, endDate?: string) => {
+  const getWorksByEmployeeID = (employeeId: number, startDate?: Date, endDate?: Date): Work[] => {
     const employee = employees.find(emp => emp.id === employeeId);
     if (!employee || !employee.work) {
       return [];
@@ -162,20 +172,25 @@ export const EmployeesProvider: React.FC<{ children: ReactNode }> = ({ children 
 
     if (!startDate || !endDate) {
       const today = new Date();
-      startDate = format(startOfMonth(today), 'yyyy-MM-dd');
-      endDate = format(endOfMonth(today), 'yyyy-MM-dd');
+      startDate = startOfMonth(today);
+      endDate = endOfMonth(today);
     }
 
-    return employee.work.filter(work => work.date >= startDate && work.date <= endDate);
+    return employee.work.filter(work => {
+      const workDate = new Date(work.date);
+      return workDate >= startDate! && workDate <= endDate!;
+    });
   };
 
-  const deleteWork = async (employeeId: number, workId: number) => {
+
+  const deleteWork = async (employeeId: number, workId: string) => {
     const employee = employees.find(emp => emp.id === employeeId);
     if (!employee) return;
     employee.work = employee.work.filter(work => work.id !== workId);
     await api.put(`employees/${employeeId}`, employee);
     await getEmployees();
   };
+
 
   useEffect(() => {
     getEmployees();
